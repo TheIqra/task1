@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Trading Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .loader {
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .gradient-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            transition: all 0.3s ease;
+        }
+
+        .gradient-btn:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .profit {
+            color: #16a34a;
+        }
+
+        .loss {
+            color: #dc2626;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen py-8 px-4">
+    <div class="max-w-4xl mx-auto">
+        
+        <!-- Main Card -->
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            
+            <!-- Header -->
+            <div class="text-center py-6 border-b border-gray-100">
+                <h1 class="text-2xl font-bold text-gray-800 flex items-center justify-center gap-3">
+                    <i class="fas fa-chart-line text-3xl text-blue-600"></i>
+                    Stock Trading Simulator
+                </h1>
+                <p class="text-gray-500 text-sm mt-1">Golden Cross / Death Cross Strategy</p>
+            </div>
+
+            <!-- Form -->
+            <div class="p-6">
+                <form id="simulationForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label for="symbol" class="block text-sm font-medium text-gray-700 mb-1">Stock Symbol</label>
+                        <input type="text" id="symbol" value="MSFT" 
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all uppercase"
+                            placeholder="e.g., AAPL" required>
+                    </div>
+                    
+                    <div>
+                        <label for="startDate" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                        <input type="date" id="startDate" value="2023-08-22"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+                    </div>
+                    
+                    <div>
+                        <label for="endDate" class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                        <input type="date" id="endDate" value="2025-06-04"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+                    </div>
+                    
+                    <div>
+                        <label for="budget" class="block text-sm font-medium text-gray-700 mb-1">Budget ($)</label>
+                        <input type="number" id="budget" value="10000" min="100"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                            placeholder="10000" required>
+                    </div>
+                </form>
+
+                <!-- Submit Button -->
+                <button id="runBtn" onclick="runSimulation()" 
+                    class="gradient-btn w-full mt-6 py-3 px-6 text-white font-semibold rounded-lg shadow-lg flex items-center justify-center gap-2">
+                    Run Simulation <i class="fas fa-rocket"></i>
+                </button>
+            </div>
+
+            <!-- Loading -->
+            <div id="loading" class="hidden px-6 pb-6">
+                <div class="flex items-center justify-center gap-3 py-8">
+                    <div class="loader"></div>
+                    <span class="text-gray-600">Running simulation...</span>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results" class="hidden px-6 pb-6 fade-in">
+                
+                <!-- Summary Card -->
+                <div class="result-card rounded-xl p-6 mb-6 border border-gray-200">
+                    <div class="text-center">
+                        <h2 class="text-2xl font-bold text-gray-800">
+                            Final Balance: <span id="finalBalance">$0.00</span>
+                        </h2>
+                        <p class="text-lg mt-1">
+                            Total Profit/Loss: <span id="profitLoss" class="font-semibold">$0.00</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Performance Chart -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-4">
+                        <i class="fas fa-chart-bar text-blue-500"></i> Performance Chart
+                    </h3>
+                    <div class="bg-white rounded-xl border border-gray-200 p-4">
+                        <canvas id="priceChart" height="300"></canvas>
+                    </div>
+                </div>
+
+                <!-- Trade Logs -->
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-4">
+                        <i class="fas fa-list-ol text-blue-500"></i> Trade Logs
+                    </h3>
+                    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <table class="w-full">
+                            <thead class="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Date</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Action</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Price</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Shares</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tradeLogsBody" class="divide-y divide-gray-100">
+                                <!-- Trade logs will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="hidden px-6 pb-6">
+                <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span id="errorText">An error occurred</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-6 text-gray-500 text-sm">
+            <p>© 2026. Internship Task - GTR</p>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        let priceChart = null;
+
+        // Set default dates
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const twoYearsAgo = new Date();
+            twoYearsAgo.setFullYear(today.getFullYear() - 2);
+            
+            document.getElementById('startDate').value = twoYearsAgo.toISOString().split('T')[0];
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+        });
+
+        async function runSimulation() {
+            const symbol = document.getElementById('symbol').value.trim().toUpperCase();
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const budget = parseFloat(document.getElementById('budget').value);
+
+            if (!symbol || !startDate || !endDate || !budget) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('results').classList.add('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+            document.getElementById('runBtn').disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/simulate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        symbol: symbol,
+                        start_date: startDate,
+                        end_date: endDate,
+                        budget: budget
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Simulation failed');
+                }
+
+                const data = await response.json();
+                displayResults(data);
+
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('runBtn').disabled = false;
+            }
+        }
+
+        function displayResults(data) {
+            // Update summary
+            document.getElementById('finalBalance').textContent = `$${data.final_balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+            
+            const profitLossEl = document.getElementById('profitLoss');
+            const profitLoss = data.total_profit_loss;
+            profitLossEl.textContent = `$${profitLoss >= 0 ? '' : ''}${profitLoss.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+            profitLossEl.className = profitLoss >= 0 ? 'font-semibold profit' : 'font-semibold loss';
+
+            // Render chart
+            renderChart(data.chart_data, data.symbol);
+
+            // Populate trade logs
+            populateTradeLogs(data.trades);
+
+            // Show results
+            document.getElementById('results').classList.remove('hidden');
+        }
+
+        function renderChart(chartData, symbol) {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+
+            // Destroy existing chart
+            if (priceChart) {
+                priceChart.destroy();
+            }
+
+            const labels = chartData.map(d => d.date);
+            const closeData = chartData.map(d => d.close);
+            const ma50Data = chartData.map(d => d.ma50);
+            const ma200Data = chartData.map(d => d.ma200);
+
+            priceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Close Price',
+                            data: closeData,
+                            borderColor: '#6b7280',
+                            backgroundColor: 'transparent',
+                            borderWidth: 1.5,
+                            pointRadius: 0,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'SMA 50',
+                            data: ma50Data,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'SMA 200',
+                            data: ma200Data,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [10, 5],
+                            pointRadius: 0,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `Analysis: ${symbol}`,
+                            font: { size: 14, weight: 'normal' }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            grid: { display: false },
+                            ticks: {
+                                maxTicksLimit: 8,
+                                font: { size: 10 }
+                            }
+                        },
+                        y: {
+                            display: true,
+                            grid: { color: '#f3f4f6' },
+                            ticks: {
+                                font: { size: 10 }
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+
+        function populateTradeLogs(trades) {
+            const tbody = document.getElementById('tradeLogsBody');
+            tbody.innerHTML = '';
+
+            if (trades.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                            No trades were executed during this period
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            trades.forEach(trade => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors';
+                
+                const actionClass = trade.action === 'BUY' ? 'text-blue-600 font-semibold' : 'text-red-600 font-semibold';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 text-sm text-gray-800">${trade.date}</td>
+                    <td class="px-6 py-4 text-sm ${actionClass}">${trade.action}</td>
+                    <td class="px-6 py-4 text-sm text-gray-800">$${trade.price.toFixed(2)}</td>
+                    <td class="px-6 py-4 text-sm text-gray-800">${trade.shares}</td>
+                    <td class="px-6 py-4 text-sm text-gray-800">$${trade.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorMessage').classList.remove('hidden');
+            document.getElementById('results').classList.add('hidden');
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('simulationForm').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                runSimulation();
+            }
+        });
+    </script>
+</body>
+
+</html>
