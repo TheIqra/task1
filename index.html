@@ -57,12 +57,12 @@
 
         .gradient-btn:hover {
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
         }
 
-        .result-card {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        .card-shadow {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         }
 
         .profit {
@@ -72,132 +72,161 @@
         .loss {
             color: #dc2626;
         }
+
+        .input-fun {
+            transition: all 0.2s ease;
+        }
+
+        .input-fun:focus {
+            transform: scale(1.02);
+        }
     </style>
 </head>
 
 <body class="min-h-screen py-8 px-4">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-6xl mx-auto">
         
-        <!-- Main Card -->
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center gap-3 bg-white px-8 py-4 rounded-full shadow-lg mb-3">
+                <i class="fas fa-chart-line text-4xl text-blue-600"></i>
+                <h1 class="text-3xl font-bold text-gray-800">Stock Trading Simulator</h1>
+            </div>
+            <p class="text-gray-600">Golden Cross / Death Cross Strategy</p>
+        </div>
+
+        <!-- Main Layout - Two Columns -->
+        <div class="grid lg:grid-cols-3 gap-6">
             
-            <!-- Header -->
-            <div class="text-center py-6 border-b border-gray-100">
-                <h1 class="text-2xl font-bold text-gray-800 flex items-center justify-center gap-3">
-                    <i class="fas fa-chart-line text-3xl text-blue-600"></i>
-                    Stock Trading Simulator
-                </h1>
-                <p class="text-gray-500 text-sm mt-1">Golden Cross / Death Cross Strategy</p>
-            </div>
-
-            <!-- Form -->
-            <div class="p-6">
-                <form id="simulationForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <label for="symbol" class="block text-sm font-medium text-gray-700 mb-1">Stock Symbol</label>
-                        <input type="text" id="symbol" value="MSFT" 
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all uppercase"
-                            placeholder="e.g., AAPL" required>
-                    </div>
-                    
-                    <div>
-                        <label for="startDate" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                        <input type="date" id="startDate" value="2023-08-22"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
-                    </div>
-                    
-                    <div>
-                        <label for="endDate" class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                        <input type="date" id="endDate" value="2025-06-04"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
-                    </div>
-                    
-                    <div>
-                        <label for="budget" class="block text-sm font-medium text-gray-700 mb-1">Budget ($)</label>
-                        <input type="number" id="budget" value="10000" min="100"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                            placeholder="10000" required>
-                    </div>
-                </form>
-
-                <!-- Submit Button -->
-                <button id="runBtn" onclick="runSimulation()" 
-                    class="gradient-btn w-full mt-6 py-3 px-6 text-white font-semibold rounded-lg shadow-lg flex items-center justify-center gap-2">
-                    Run Simulation <i class="fas fa-rocket"></i>
-                </button>
-            </div>
-
-            <!-- Loading -->
-            <div id="loading" class="hidden px-6 pb-6">
-                <div class="flex items-center justify-center gap-3 py-8">
-                    <div class="loader"></div>
-                    <span class="text-gray-600">Running simulation...</span>
-                </div>
-            </div>
-
-            <!-- Results Section -->
-            <div id="results" class="hidden px-6 pb-6 fade-in">
+            <!-- Left Column - Controls -->
+            <div class="lg:col-span-1 space-y-6">
                 
-                <!-- Summary Card -->
-                <div class="result-card rounded-xl p-6 mb-6 border border-gray-200">
+                <!-- Input Card -->
+                <div class="bg-white rounded-3xl shadow-xl p-6">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-sliders text-blue-500"></i> Settings
+                    </h2>
+                    
+                    <form id="simulationForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Stock Symbol</label>
+                            <input type="text" id="symbol" value="MSFT" 
+                                class="input-fun w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none uppercase text-center text-lg font-bold"
+                                placeholder="AAPL" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Start Date</label>
+                            <input type="date" id="startDate" value="2023-08-22"
+                                class="input-fun w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-2">End Date</label>
+                            <input type="date" id="endDate" value="2025-06-04"
+                                class="input-fun w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Budget ($)</label>
+                            <input type="number" id="budget" value="10000" min="100"
+                                class="input-fun w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none text-lg font-semibold"
+                                placeholder="10000" required>
+                        </div>
+                    </form>
+
+                    <button id="runBtn" onclick="runSimulation()" 
+                        class="gradient-btn w-full mt-6 py-4 px-6 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 text-lg">
+                        <i class="fas fa-rocket"></i> Run It!
+                    </button>
+                </div>
+
+                <!-- Summary Card (shows after simulation) -->
+                <div id="summaryCard" class="hidden bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl shadow-xl p-6 text-white">
                     <div class="text-center">
-                        <h2 class="text-2xl font-bold text-gray-800">
-                            Final Balance: <span id="finalBalance">$0.00</span>
-                        </h2>
-                        <p class="text-lg mt-1">
-                            Total Profit/Loss: <span id="profitLoss" class="font-semibold">$0.00</span>
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Performance Chart -->
-                <div class="mb-8">
-                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-4">
-                        <i class="fas fa-chart-bar text-blue-500"></i> Performance Chart
-                    </h3>
-                    <div class="bg-white rounded-xl border border-gray-200 p-4">
-                        <canvas id="priceChart" height="300"></canvas>
-                    </div>
-                </div>
-
-                <!-- Trade Logs -->
-                <div>
-                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-4">
-                        <i class="fas fa-list-ol text-blue-500"></i> Trade Logs
-                    </h3>
-                    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                        <table class="w-full">
-                            <thead class="bg-gray-50 border-b border-gray-200">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Date</th>
-                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Action</th>
-                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Price</th>
-                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Shares</th>
-                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Balance</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tradeLogsBody" class="divide-y divide-gray-100">
-                                <!-- Trade logs will be inserted here -->
-                            </tbody>
-                        </table>
+                        <p class="text-sm opacity-90 mb-1">Final Balance</p>
+                        <h2 class="text-3xl font-bold mb-4" id="finalBalance">$0.00</h2>
+                        <div class="bg-white bg-opacity-20 rounded-xl p-3">
+                            <p class="text-xs opacity-90 mb-1">Profit/Loss</p>
+                            <p class="text-2xl font-bold" id="profitLoss">$0.00</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Error Message -->
-            <div id="errorMessage" class="hidden px-6 pb-6">
-                <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800">
-                    <div class="flex items-center gap-2">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span id="errorText">An error occurred</span>
+            <!-- Right Column - Results -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Loading -->
+                <div id="loading" class="hidden">
+                    <div class="bg-white rounded-3xl shadow-xl p-12">
+                        <div class="flex flex-col items-center justify-center gap-4">
+                            <div class="loader"></div>
+                            <span class="text-gray-600 text-lg">Crunching numbers...</span>
+                        </div>
                     </div>
+                </div>
+
+                <!-- Error Message -->
+                <div id="errorMessage" class="hidden">
+                    <div class="bg-red-50 border-2 border-red-200 rounded-3xl p-6">
+                        <div class="flex items-center gap-3 text-red-800">
+                            <i class="fas fa-exclamation-circle text-2xl"></i>
+                            <span id="errorText" class="font-medium">An error occurred</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div id="results" class="hidden space-y-6 fade-in">
+                    
+                    <!-- Chart Card -->
+                    <div class="bg-white rounded-3xl shadow-xl p-6">
+                        <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-4">
+                            <i class="fas fa-chart-area text-blue-500"></i> Price Chart
+                        </h3>
+                        <div class="bg-gray-50 rounded-2xl p-4">
+                            <canvas id="priceChart" height="280"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Trade Logs Card -->
+                    <div class="bg-white rounded-3xl shadow-xl p-6">
+                        <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-4">
+                            <i class="fas fa-history text-blue-500"></i> Trade History
+                        </h3>
+                        <div class="overflow-x-auto">
+                            <div class="bg-gray-50 rounded-2xl overflow-hidden">
+                                <table class="w-full">
+                                    <thead class="bg-gray-200">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Date</th>
+                                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Action</th>
+                                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Price</th>
+                                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Shares</th>
+                                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tradeLogsBody" class="divide-y divide-gray-200">
+                                        <!-- Trade logs will be inserted here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Placeholder when no results -->
+                <div id="placeholder" class="bg-white rounded-3xl shadow-xl p-12 text-center">
+                    <i class="fas fa-chart-line text-6xl text-gray-300 mb-4"></i>
+                    <p class="text-gray-500 text-lg">Run a simulation to see results!</p>
                 </div>
             </div>
         </div>
 
         <!-- Footer -->
-        <div class="text-center mt-6 text-gray-500 text-sm">
-            <p>© 2026. Internship Task - GTR</p>
+        <div class="text-center mt-8">
+            <p class="text-gray-500 text-sm">© 2026 | Internship Task - GTR</p>
         </div>
     </div>
 
@@ -230,6 +259,8 @@
             document.getElementById('loading').classList.remove('hidden');
             document.getElementById('results').classList.add('hidden');
             document.getElementById('errorMessage').classList.add('hidden');
+            document.getElementById('placeholder').classList.add('hidden');
+            document.getElementById('summaryCard').classList.add('hidden');
             document.getElementById('runBtn').disabled = true;
 
             try {
@@ -266,8 +297,7 @@
             
             const profitLossEl = document.getElementById('profitLoss');
             const profitLoss = data.total_profit_loss;
-            profitLossEl.textContent = `$${profitLoss >= 0 ? '' : ''}${profitLoss.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
-            profitLossEl.className = profitLoss >= 0 ? 'font-semibold profit' : 'font-semibold loss';
+            profitLossEl.textContent = `${profitLoss >= 0 ? '+' : ''}$${profitLoss.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
 
             // Render chart
             renderChart(data.chart_data, data.symbol);
@@ -277,6 +307,8 @@
 
             // Show results
             document.getElementById('results').classList.remove('hidden');
+            document.getElementById('summaryCard').classList.remove('hidden');
+            document.getElementById('placeholder').classList.add('hidden');
         }
 
         function renderChart(chartData, symbol) {
@@ -302,7 +334,7 @@
                             data: closeData,
                             borderColor: '#6b7280',
                             backgroundColor: 'transparent',
-                            borderWidth: 1.5,
+                            borderWidth: 2,
                             pointRadius: 0,
                             tension: 0.1
                         },
@@ -334,15 +366,16 @@
                     plugins: {
                         title: {
                             display: true,
-                            text: `Analysis: ${symbol}`,
-                            font: { size: 14, weight: 'normal' }
+                            text: `${symbol} Analysis`,
+                            font: { size: 15, weight: '600' }
                         },
                         legend: {
                             display: true,
                             position: 'top',
                             labels: {
                                 usePointStyle: true,
-                                padding: 15
+                                padding: 15,
+                                font: { size: 11 }
                             }
                         }
                     },
@@ -357,7 +390,7 @@
                         },
                         y: {
                             display: true,
-                            grid: { color: '#f3f4f6' },
+                            grid: { color: '#e5e7eb' },
                             ticks: {
                                 font: { size: 10 }
                             }
@@ -378,8 +411,8 @@
             if (trades.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="px-6 py-8 text-center text-gray-500">
-                            No trades were executed during this period
+                        <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                            No trades during this period
                         </td>
                     </tr>
                 `;
@@ -388,16 +421,16 @@
 
             trades.forEach(trade => {
                 const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50 transition-colors';
+                row.className = 'hover:bg-gray-100 transition-colors';
                 
-                const actionClass = trade.action === 'BUY' ? 'text-blue-600 font-semibold' : 'text-red-600 font-semibold';
+                const actionClass = trade.action === 'BUY' ? 'text-blue-600 font-bold' : 'text-red-600 font-bold';
                 
                 row.innerHTML = `
-                    <td class="px-6 py-4 text-sm text-gray-800">${trade.date}</td>
-                    <td class="px-6 py-4 text-sm ${actionClass}">${trade.action}</td>
-                    <td class="px-6 py-4 text-sm text-gray-800">$${trade.price.toFixed(2)}</td>
-                    <td class="px-6 py-4 text-sm text-gray-800">${trade.shares}</td>
-                    <td class="px-6 py-4 text-sm text-gray-800">$${trade.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${trade.date}</td>
+                    <td class="px-4 py-3 text-sm ${actionClass}">${trade.action}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">$${trade.price.toFixed(2)}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${trade.shares}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700 font-semibold">$${trade.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                 `;
                 
                 tbody.appendChild(row);
@@ -408,6 +441,8 @@
             document.getElementById('errorText').textContent = message;
             document.getElementById('errorMessage').classList.remove('hidden');
             document.getElementById('results').classList.add('hidden');
+            document.getElementById('placeholder').classList.add('hidden');
+            document.getElementById('summaryCard').classList.add('hidden');
         }
 
         // Allow Enter key to submit
